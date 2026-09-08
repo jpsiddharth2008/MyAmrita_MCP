@@ -1,18 +1,17 @@
 import { McpApp, Module, ConfigModule } from '@nitrostack/core';
-import { CalculatorModule } from './modules/calculator/calculator.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { SystemHealthCheck } from './health/system.health.js';
 
 /**
  * Root Application Module
- * 
+ *
  * This is the main module that bootstraps the MCP server.
  * It registers all feature modules and health checks.
  */
 @McpApp({
   module: AppModule,
   server: {
-    name: 'calculator-server',
+    name: 'amrita-ai-assistant',
     version: '1.0.0'
   },
   logging: {
@@ -24,7 +23,6 @@ import { SystemHealthCheck } from './health/system.health.js';
   description: 'Root application module',
   imports: [
     ConfigModule.forRoot(),
-    CalculatorModule,
     AuthModule
   ],
   providers: [
