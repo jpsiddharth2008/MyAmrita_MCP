@@ -28,7 +28,7 @@ function splitByBr(cellHtml: string): string[] {
     .filter((part) => part.length > 0);
 }
 
-@Injectable()
+@Injectable({ deps: [SessionService] })
 export class AttendanceService {
   constructor(private readonly session: SessionService) {}
 

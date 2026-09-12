@@ -1,7 +1,14 @@
-import { ToolDecorator as Tool, ControllerDecorator as Controller, ExecutionContext, z } from '@nitrostack/core';
+import {
+  ToolDecorator as Tool,
+  ControllerDecorator as Controller,
+  Injectable,
+  ExecutionContext,
+  z,
+} from '@nitrostack/core';
 import { AttendanceService } from './attendance.service.js';
 
 @Controller('attendance')
+@Injectable({ deps: [AttendanceService] })
 export class AttendanceTools {
   constructor(private readonly attendance: AttendanceService) {}
 

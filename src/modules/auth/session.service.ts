@@ -24,7 +24,7 @@ interface StoredCookie {
  * real browser window. The resulting cookies are persisted (encrypted) so every
  * later tool call can reuse them until the portal session itself expires.
  */
-@Injectable()
+@Injectable({ deps: [ConfigService] })
 export class SessionService implements OnModuleInit {
   private cookies: StoredCookie[] = [];
   private authenticated = false;

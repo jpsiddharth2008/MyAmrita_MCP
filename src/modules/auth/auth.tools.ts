@@ -1,7 +1,14 @@
-import { ToolDecorator as Tool, ControllerDecorator as Controller, ExecutionContext, z } from '@nitrostack/core';
+import {
+  ToolDecorator as Tool,
+  ControllerDecorator as Controller,
+  Injectable,
+  ExecutionContext,
+  z,
+} from '@nitrostack/core';
 import { SessionService } from './session.service.js';
 
 @Controller('auth')
+@Injectable({ deps: [SessionService] })
 export class AuthTools {
   constructor(private readonly session: SessionService) {}
 
