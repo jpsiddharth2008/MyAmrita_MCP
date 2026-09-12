@@ -9,6 +9,9 @@ const PORTAL_HOME = 'https://students.amrita.edu/client/index';
 const SSO_GATE = 'https://my.amrita.edu';
 const BROWSER_UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+const CDP_ENDPOINT = 'http://localhost:9222';
+const LAUNCH_EDGE_COMMAND =
+  '"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe" --remote-debugging-port=9222 --user-data-dir="%TEMP%\\amrita-edge-profile"';
 
 interface StoredCookie {
   name: string;
@@ -80,34 +83,48 @@ export class SessionService implements OnModuleInit {
   }
 
   /**
-   * Opens a real, visible browser window and waits for the user to complete
-   * Microsoft SSO login themselves. This code never sees or handles the user's
-   * credentials — it only captures the resulting session cookies afterward.
+   * Connects to a browser window the user launches themselves (with remote
+   * debugging enabled) and waits for them to complete Microsoft SSO login.
+   * This code never sees or handles the user's credentials — it only reads
+   * the resulting session cookies afterward.
+   *
+   * The server does NOT launch the browser itself: some MCP client hosts run
+   * this process in a context that can spawn a browser but not one that
+   * actually gets a usable display/window (it opens, then gets killed within
+   * seconds regardless of which browser binary is used). Connecting instead
+   * to a browser the user starts in their own terminal sidesteps that
+   * entirely — launching is done somewhere already proven to have a real
+   * desktop session, and this code only talks to it over a local port.
    */
   async interactiveLogin(): Promise<void> {
-    // Uses the system's installed Microsoft Edge (Chromium-based) rather than
-    // Playwright's own downloaded/unsigned Chromium binary — a properly signed,
-    // already-trusted browser is far less likely to get killed mid-launch by
-    // antivirus/Defender heuristics.
-    const browser = await chromium.launch({ headless: false, channel: 'msedge' });
+    let browser;
     try {
-      const context = await browser.newContext();
-      const page = await context.newPage();
-      await page.goto(SSO_GATE);
-
-      // Wait for the SSO round-trip to land back on the authenticated dashboard.
-      await page.waitForURL('**/client/index**', { timeout: 5 * 60 * 1000 });
-
-      const rawCookies = await context.cookies();
-      this.cookies = rawCookies
-        .filter((c) => c.domain.includes('amrita.edu'))
-        .map((c) => ({ name: c.name, value: c.value, domain: c.domain, path: c.path }));
-
-      this.authenticated = this.cookies.length > 0;
-      await this.persistSession();
-    } finally {
-      await browser.close();
+      browser = await chromium.connectOverCDP(CDP_ENDPOINT);
+    } catch {
+      throw new Error(
+        'No browser is available for login. Open a terminal yourself and run:\n\n' +
+          `  ${LAUNCH_EDGE_COMMAND}\n\n` +
+          'Leave that Edge window open, then call auth_login again.'
+      );
     }
+
+    const context = browser.contexts()[0] ?? (await browser.newContext());
+    const page = await context.newPage();
+    await page.goto(SSO_GATE);
+
+    // Wait for the SSO round-trip to land back on the authenticated dashboard.
+    await page.waitForURL('**/client/index**', { timeout: 5 * 60 * 1000 });
+
+    const rawCookies = await context.cookies();
+    this.cookies = rawCookies
+      .filter((c) => c.domain.includes('amrita.edu'))
+      .map((c) => ({ name: c.name, value: c.value, domain: c.domain, path: c.path }));
+
+    this.authenticated = this.cookies.length > 0;
+    await this.persistSession();
+
+    // Disconnect only — this browser belongs to the user, not to us.
+    await browser.close();
   }
 
   async clearSession(): Promise<void> {

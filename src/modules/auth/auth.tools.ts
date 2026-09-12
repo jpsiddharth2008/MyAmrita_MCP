@@ -26,10 +26,12 @@ export class AuthTools {
   @Tool({
     name: 'login',
     description:
-      'Open a real browser window for the user to log in to the Amrita student portal via Microsoft SSO. ' +
-      'Only call this after the user has explicitly asked to log in or re-authenticate — it opens a visible ' +
-      'browser window and blocks until the user finishes signing in themselves (or times out after 5 minutes). ' +
-      'Once logged in, the session is reused automatically by every other tool until it expires.',
+      'Log in to the Amrita student portal via Microsoft SSO. Requires the user to have already opened a ' +
+      'browser themselves with remote debugging enabled (this tool will return the exact command to run if ' +
+      'none is found) — this tool then connects to that browser, navigates it to the login page, and blocks ' +
+      'until the user finishes signing in themselves (or times out after 5 minutes). Only call this after the ' +
+      'user has explicitly asked to log in or re-authenticate. Once logged in, the session is reused ' +
+      'automatically by every other tool until it expires.',
     inputSchema: z.object({}),
   })
   async login(_input: {}, ctx: ExecutionContext) {
