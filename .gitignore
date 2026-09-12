@@ -2,6 +2,10 @@
 node_modules/
 src/widgets/node_modules/
 
+# Project-local Playwright browser binaries (see PLAYWRIGHT_BROWSERS_PATH in .env)
+.local-browsers/
+ms-playwright/
+
 # Build outputs
 dist/
 src/widgets/.next/
