@@ -85,7 +85,11 @@ export class SessionService implements OnModuleInit {
    * credentials — it only captures the resulting session cookies afterward.
    */
   async interactiveLogin(): Promise<void> {
-    const browser = await chromium.launch({ headless: false });
+    // Uses the system's installed Microsoft Edge (Chromium-based) rather than
+    // Playwright's own downloaded/unsigned Chromium binary — a properly signed,
+    // already-trusted browser is far less likely to get killed mid-launch by
+    // antivirus/Defender heuristics.
+    const browser = await chromium.launch({ headless: false, channel: 'msedge' });
     try {
       const context = await browser.newContext();
       const page = await context.newPage();
