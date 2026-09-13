@@ -2,6 +2,7 @@ import { Injectable } from '@nitrostack/core';
 import * as cheerio from 'cheerio';
 import { SessionService } from '../auth/session.service.js';
 import { parseSelectedAcademicTerm, type AcademicTerm } from '../../common/academic-term.js';
+import { PortalSessionExpiredError } from '../../common/errors.js';
 
 const MARKS_URL = 'https://students.amrita.edu/client/mark';
 const BROWSER_UA =
@@ -22,7 +23,7 @@ export class MarksService {
 
   async getMarks(academicTermId?: string): Promise<{ term: AcademicTerm | null; marks: MarkEntry[] }> {
     if (!this.session.isAuthenticated()) {
-      throw new Error('Not logged in to the Amrita student portal. Run the auth_login tool first.');
+      throw new PortalSessionExpiredError();
     }
 
     const url = academicTermId
@@ -38,9 +39,7 @@ export class MarksService {
     });
 
     if (res.status !== 200) {
-      throw new Error(
-        'Amrita portal session appears to have expired. Run the auth_login tool to sign in again.'
-      );
+      throw new PortalSessionExpiredError();
     }
 
     const html = await res.text();

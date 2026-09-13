@@ -2,10 +2,12 @@ import {
   ToolDecorator as Tool,
   ControllerDecorator as Controller,
   Injectable,
+  UseFilters,
   ExecutionContext,
   z,
 } from '@nitrostack/core';
 import { AttendanceService } from './attendance.service.js';
+import { SessionExpiredFilter } from '../../common/session-expired.filter.js';
 
 @Controller('attendance')
 @Injectable({ deps: [AttendanceService] })
@@ -27,6 +29,7 @@ export class AttendanceTools {
         .describe('Optional academic term id to view a past term instead of the portal\'s default term.'),
     }),
   })
+  @UseFilters(SessionExpiredFilter)
   async getAttendance(input: { academicTermId?: string }, ctx: ExecutionContext) {
     const { term, subjects } = await this.attendance.getAttendance(input.academicTermId);
     ctx.logger.info('Fetched attendance', { term: term?.label, subjectCount: subjects.length });
@@ -60,6 +63,7 @@ export class AttendanceTools {
         .describe('Optional academic term id to check a past term instead of the portal\'s default term.'),
     }),
   })
+  @UseFilters(SessionExpiredFilter)
   async getLowAttendanceSubjects(input: { threshold: number; academicTermId?: string }, ctx: ExecutionContext) {
     const { term, subjects } = await this.attendance.getAttendance(input.academicTermId);
     const belowThreshold = subjects.filter((s) => s.percentage < input.threshold);

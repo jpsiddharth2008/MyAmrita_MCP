@@ -1,6 +1,7 @@
 import { Injectable } from '@nitrostack/core';
 import * as cheerio from 'cheerio';
 import { SessionService } from '../auth/session.service.js';
+import { PortalSessionExpiredError } from '../../common/errors.js';
 
 const TIMETABLE_URL = 'https://students.amrita.edu/client/timetable';
 const BROWSER_UA =
@@ -36,7 +37,7 @@ export class TimetableService {
 
   async getTimetable(): Promise<TimetableDay[]> {
     if (!this.session.isAuthenticated()) {
-      throw new Error('Not logged in to the Amrita student portal. Run the auth_login tool first.');
+      throw new PortalSessionExpiredError();
     }
 
     const res = await fetch(TIMETABLE_URL, {
@@ -48,9 +49,7 @@ export class TimetableService {
     });
 
     if (res.status !== 200) {
-      throw new Error(
-        'Amrita portal session appears to have expired. Run the auth_login tool to sign in again.'
-      );
+      throw new PortalSessionExpiredError();
     }
 
     const html = await res.text();

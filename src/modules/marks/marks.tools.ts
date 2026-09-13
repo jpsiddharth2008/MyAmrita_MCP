@@ -2,10 +2,12 @@ import {
   ToolDecorator as Tool,
   ControllerDecorator as Controller,
   Injectable,
+  UseFilters,
   ExecutionContext,
   z,
 } from '@nitrostack/core';
 import { MarksService } from './marks.service.js';
+import { SessionExpiredFilter } from '../../common/session-expired.filter.js';
 
 @Controller('marks')
 @Injectable({ deps: [MarksService] })
@@ -26,6 +28,7 @@ export class MarksTools {
         .describe('Optional academic term id to view a past term instead of the portal\'s default term.'),
     }),
   })
+  @UseFilters(SessionExpiredFilter)
   async getMarks(input: { academicTermId?: string }, ctx: ExecutionContext) {
     const { term, marks } = await this.marksService.getMarks(input.academicTermId);
     ctx.logger.info('Fetched marks', { term: term?.label, entryCount: marks.length });
