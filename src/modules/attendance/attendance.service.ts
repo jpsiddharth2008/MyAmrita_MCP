@@ -1,6 +1,7 @@
 import { Injectable } from '@nitrostack/core';
 import * as cheerio from 'cheerio';
 import { SessionService } from '../auth/session.service.js';
+import { parseSelectedAcademicTerm, type AcademicTerm } from '../../common/academic-term.js';
 
 const ATTENDANCE_URL = 'https://students.amrita.edu/client/class-attendance';
 const BROWSER_UA =
@@ -32,7 +33,7 @@ function splitByBr(cellHtml: string): string[] {
 export class AttendanceService {
   constructor(private readonly session: SessionService) {}
 
-  async getAttendance(academicTermId?: string): Promise<AttendanceRow[]> {
+  async getAttendance(academicTermId?: string): Promise<{ term: AcademicTerm | null; subjects: AttendanceRow[] }> {
     if (!this.session.isAuthenticated()) {
       throw new Error('Not logged in to the Amrita student portal. Run the auth_login tool first.');
     }
@@ -57,6 +58,7 @@ export class AttendanceService {
 
     const html = await res.text();
     const $ = cheerio.load(html);
+    const term = parseSelectedAcademicTerm($);
     const rows: AttendanceRow[] = [];
 
     $('table#home_tab tr').each((i, el) => {
@@ -83,6 +85,6 @@ export class AttendanceService {
       });
     });
 
-    return rows;
+    return { term, subjects: rows };
   }
 }
