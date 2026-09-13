@@ -1,6 +1,7 @@
 import { McpApp, Module, ConfigModule } from '@nitrostack/core';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { AttendanceModule } from './modules/attendance/attendance.module.js';
+import { TimetableModule } from './modules/timetable/timetable.module.js';
 import { SystemHealthCheck } from './health/system.health.js';
 
 /**
@@ -25,7 +26,8 @@ import { SystemHealthCheck } from './health/system.health.js';
   imports: [
     ConfigModule.forRoot(),
     AuthModule,
-    AttendanceModule
+    AttendanceModule,
+    TimetableModule
   ],
   providers: [
     // Health Checks
