@@ -3,6 +3,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { AttendanceModule } from './modules/attendance/attendance.module.js';
 import { TimetableModule } from './modules/timetable/timetable.module.js';
 import { MarksModule } from './modules/marks/marks.module.js';
+import { LeaveModule } from './modules/leave/leave.module.js';
 import { SystemHealthCheck } from './health/system.health.js';
 
 /**
@@ -29,7 +30,8 @@ import { SystemHealthCheck } from './health/system.health.js';
     AuthModule,
     AttendanceModule,
     TimetableModule,
-    MarksModule
+    MarksModule,
+    LeaveModule
   ],
   providers: [
     // Health Checks
