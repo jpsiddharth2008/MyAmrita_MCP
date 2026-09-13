@@ -1,12 +1,9 @@
 import { Injectable } from '@nitrostack/core';
-import * as cheerio from 'cheerio';
-import { SessionService } from '../auth/session.service.js';
+import { PortalHttpClient } from '../../common/portal-http-client.js';
 import { parseSelectedAcademicTerm, type AcademicTerm } from '../../common/academic-term.js';
-import { PortalSessionExpiredError } from '../../common/errors.js';
+import { parseDataRows, splitCellLines } from '../../common/html-table-parser.js';
 
 const ATTENDANCE_URL = 'https://students.amrita.edu/client/class-attendance';
-const BROWSER_UA =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
 export interface AttendanceRow {
   slNo: number;
@@ -22,68 +19,37 @@ export interface AttendanceRow {
   medical: number;
 }
 
-/** Splits a table cell's inner HTML on <br> tags into trimmed, non-empty text lines. */
-function splitByBr(cellHtml: string): string[] {
-  return cellHtml
-    .split(/<br\s*\/?>/i)
-    .map((part) => part.replace(/<[^>]+>/g, '').trim())
-    .filter((part) => part.length > 0);
-}
-
-@Injectable({ deps: [SessionService] })
+@Injectable({ deps: [PortalHttpClient] })
 export class AttendanceService {
-  constructor(private readonly session: SessionService) {}
+  constructor(private readonly http: PortalHttpClient) {}
 
   async getAttendance(academicTermId?: string): Promise<{ term: AcademicTerm | null; subjects: AttendanceRow[] }> {
-    if (!this.session.isAuthenticated()) {
-      throw new PortalSessionExpiredError();
-    }
-
     const url = academicTermId
       ? `${ATTENDANCE_URL}?academic_term_id=${encodeURIComponent(academicTermId)}`
       : ATTENDANCE_URL;
 
-    const res = await fetch(url, {
-      redirect: 'manual',
-      headers: {
-        Cookie: this.session.cookieHeaderFor('students.amrita.edu'),
-        'User-Agent': BROWSER_UA,
-      },
-    });
-
-    if (res.status !== 200) {
-      throw new PortalSessionExpiredError();
-    }
-
-    const html = await res.text();
-    const $ = cheerio.load(html);
+    const $ = await this.http.fetchPage(url);
     const term = parseSelectedAcademicTerm($);
-    const rows: AttendanceRow[] = [];
 
-    $('table#home_tab tr').each((i, el) => {
-      if (i === 0) return; // header row
+    const subjects = parseDataRows($, 'table#home_tab tr', 10, (cells) => {
+      const courseLines = splitCellLines(cells[2].html() ?? '');
+      const faculty = splitCellLines(cells[3].html() ?? '');
 
-      const cells = $(el).find('th, td');
-      if (cells.length < 10) return;
-
-      const courseLines = splitByBr($(cells[2]).html() ?? '');
-      const faculty = splitByBr($(cells[3]).html() ?? '');
-
-      rows.push({
-        slNo: Number($(cells[0]).text().trim()),
-        className: $(cells[1]).text().trim(),
+      return {
+        slNo: Number(cells[0].text().trim()),
+        className: cells[1].text().trim(),
         courseCode: courseLines[0] ?? '',
         courseName: courseLines[1] ?? '',
         faculty,
-        total: Number($(cells[4]).text().trim()),
-        present: Number($(cells[5]).text().trim()),
-        dutyLeave: Number($(cells[6]).text().trim()),
-        absent: Number($(cells[7]).text().trim()),
-        percentage: Number($(cells[8]).text().trim()),
-        medical: Number($(cells[9]).text().trim()),
-      });
+        total: Number(cells[4].text().trim()),
+        present: Number(cells[5].text().trim()),
+        dutyLeave: Number(cells[6].text().trim()),
+        absent: Number(cells[7].text().trim()),
+        percentage: Number(cells[8].text().trim()),
+        medical: Number(cells[9].text().trim()),
+      };
     });
 
-    return { term, subjects: rows };
+    return { term, subjects };
   }
 }

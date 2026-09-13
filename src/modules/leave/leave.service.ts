@@ -1,11 +1,8 @@
 import { Injectable } from '@nitrostack/core';
-import * as cheerio from 'cheerio';
-import { SessionService } from '../auth/session.service.js';
-import { PortalSessionExpiredError } from '../../common/errors.js';
+import { PortalHttpClient } from '../../common/portal-http-client.js';
+import { parseDataRows } from '../../common/html-table-parser.js';
 
 const LEAVE_LIST_URL = 'https://students.amrita.edu/client/leave-list';
-const BROWSER_UA =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
 export interface LeaveEntry {
   id: string;
@@ -17,48 +14,21 @@ export interface LeaveEntry {
   createdOn: string;
 }
 
-@Injectable({ deps: [SessionService] })
+@Injectable({ deps: [PortalHttpClient] })
 export class LeaveService {
-  constructor(private readonly session: SessionService) {}
+  constructor(private readonly http: PortalHttpClient) {}
 
   async getLeaveList(): Promise<LeaveEntry[]> {
-    if (!this.session.isAuthenticated()) {
-      throw new PortalSessionExpiredError();
-    }
+    const $ = await this.http.fetchPage(LEAVE_LIST_URL);
 
-    const res = await fetch(LEAVE_LIST_URL, {
-      redirect: 'manual',
-      headers: {
-        Cookie: this.session.cookieHeaderFor('students.amrita.edu'),
-        'User-Agent': BROWSER_UA,
-      },
-    });
-
-    if (res.status !== 200) {
-      throw new PortalSessionExpiredError();
-    }
-
-    const html = await res.text();
-    const $ = cheerio.load(html);
-    const entries: LeaveEntry[] = [];
-
-    $('table#home_tab tr').each((i, el) => {
-      if (i === 0) return; // header row
-
-      const cells = $(el).find('th, td');
-      if (cells.length < 7) return;
-
-      entries.push({
-        id: $(cells[0]).text().trim(),
-        type: $(cells[1]).text().trim(),
-        from: $(cells[2]).text().trim(),
-        to: $(cells[3]).text().trim(),
-        status: $(cells[4]).text().trim(),
-        reason: $(cells[5]).text().trim(),
-        createdOn: $(cells[6]).text().trim(),
-      });
-    });
-
-    return entries;
+    return parseDataRows($, 'table#home_tab tr', 7, (cells) => ({
+      id: cells[0].text().trim(),
+      type: cells[1].text().trim(),
+      from: cells[2].text().trim(),
+      to: cells[3].text().trim(),
+      status: cells[4].text().trim(),
+      reason: cells[5].text().trim(),
+      createdOn: cells[6].text().trim(),
+    }));
   }
 }

@@ -1,12 +1,8 @@
 import { Injectable } from '@nitrostack/core';
-import * as cheerio from 'cheerio';
-import type { CheerioAPI } from 'cheerio';
-import { SessionService } from '../auth/session.service.js';
-import { PortalSessionExpiredError } from '../../common/errors.js';
+import { PortalHttpClient } from '../../common/portal-http-client.js';
+import { parseDataRows } from '../../common/html-table-parser.js';
 
 const HOSTEL_URL = 'https://students.amrita.edu/hostel/index';
-const BROWSER_UA =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
 export interface GatePassEntry {
   id: string;
@@ -29,56 +25,22 @@ export interface GatePassRequest {
   toTime: string;
 }
 
-@Injectable({ deps: [SessionService] })
+@Injectable({ deps: [PortalHttpClient] })
 export class GatePassService {
-  constructor(private readonly session: SessionService) {}
-
-  private async fetchHostelPage(): Promise<CheerioAPI> {
-    if (!this.session.isAuthenticated()) {
-      throw new PortalSessionExpiredError();
-    }
-
-    const res = await fetch(HOSTEL_URL, {
-      redirect: 'manual',
-      headers: {
-        Cookie: this.session.cookieHeaderFor('students.amrita.edu'),
-        'User-Agent': BROWSER_UA,
-      },
-    });
-
-    if (res.status !== 200) {
-      throw new PortalSessionExpiredError();
-    }
-
-    return cheerio.load(await res.text());
-  }
-
-  private parseGatePasses($: CheerioAPI): GatePassEntry[] {
-    const entries: GatePassEntry[] = [];
-
-    $('table#home_tab tr').each((i, el) => {
-      if (i === 0) return; // header row
-
-      const cells = $(el).find('th, td');
-      if (cells.length < 7) return;
-
-      entries.push({
-        id: $(cells[0]).text().trim(),
-        passName: $(cells[1]).text().trim(),
-        from: $(cells[2]).text().trim(),
-        to: $(cells[3]).text().trim(),
-        levelStatus: $(cells[4]).text().trim(),
-        finalStatus: $(cells[5]).text().trim(),
-        createdOn: $(cells[6]).text().trim(),
-      });
-    });
-
-    return entries;
-  }
+  constructor(private readonly http: PortalHttpClient) {}
 
   async getGatePasses(): Promise<GatePassEntry[]> {
-    const $ = await this.fetchHostelPage();
-    return this.parseGatePasses($);
+    const $ = await this.http.fetchPage(HOSTEL_URL);
+
+    return parseDataRows($, 'table#home_tab tr', 7, (cells) => ({
+      id: cells[0].text().trim(),
+      passName: cells[1].text().trim(),
+      from: cells[2].text().trim(),
+      to: cells[3].text().trim(),
+      levelStatus: cells[4].text().trim(),
+      finalStatus: cells[5].text().trim(),
+      createdOn: cells[6].text().trim(),
+    }));
   }
 
   /**
@@ -88,7 +50,7 @@ export class GatePassService {
    * dry-run semantics.
    */
   async submitGatePass(request: GatePassRequest): Promise<GatePassEntry[]> {
-    const $ = await this.fetchHostelPage();
+    const $ = await this.http.fetchPage(HOSTEL_URL);
     const token = $('#home_add_div input[name="token"]').attr('value');
     if (!token) {
       throw new Error(
@@ -106,19 +68,7 @@ export class GatePassService {
     form.set('pass_time_to', request.toTime);
     form.set('student_gate_pass_add', 'Save');
 
-    const res = await fetch(HOSTEL_URL, {
-      method: 'POST',
-      redirect: 'manual',
-      headers: {
-        Cookie: this.session.cookieHeaderFor('students.amrita.edu'),
-        'User-Agent': BROWSER_UA,
-      },
-      body: form,
-    });
-
-    if (res.status !== 200 && res.status !== 302) {
-      throw new Error(`Gate pass submission returned an unexpected status (${res.status}).`);
-    }
+    await this.http.postForm(HOSTEL_URL, form);
 
     // Best-effort confirmation: re-fetch the list so the caller can see whether the new entry appeared.
     return this.getGatePasses();

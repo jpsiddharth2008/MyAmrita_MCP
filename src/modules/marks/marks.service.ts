@@ -1,12 +1,9 @@
 import { Injectable } from '@nitrostack/core';
-import * as cheerio from 'cheerio';
-import { SessionService } from '../auth/session.service.js';
+import { PortalHttpClient } from '../../common/portal-http-client.js';
 import { parseSelectedAcademicTerm, type AcademicTerm } from '../../common/academic-term.js';
-import { PortalSessionExpiredError } from '../../common/errors.js';
+import { parseDataRows } from '../../common/html-table-parser.js';
 
 const MARKS_URL = 'https://students.amrita.edu/client/mark';
-const BROWSER_UA =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
 export interface MarkEntry {
   courseName: string;
@@ -17,49 +14,33 @@ export interface MarkEntry {
   examName: string;
 }
 
-@Injectable({ deps: [SessionService] })
+@Injectable({ deps: [PortalHttpClient] })
 export class MarksService {
-  constructor(private readonly session: SessionService) {}
+  constructor(private readonly http: PortalHttpClient) {}
 
   async getMarks(academicTermId?: string): Promise<{ term: AcademicTerm | null; marks: MarkEntry[] }> {
-    if (!this.session.isAuthenticated()) {
-      throw new PortalSessionExpiredError();
-    }
-
     const url = academicTermId
       ? `${MARKS_URL}?academic_term_id=${encodeURIComponent(academicTermId)}`
       : MARKS_URL;
 
-    const res = await fetch(url, {
-      redirect: 'manual',
-      headers: {
-        Cookie: this.session.cookieHeaderFor('students.amrita.edu'),
-        'User-Agent': BROWSER_UA,
-      },
-    });
-
-    if (res.status !== 200) {
-      throw new PortalSessionExpiredError();
-    }
-
-    const html = await res.text();
-    const $ = cheerio.load(html);
+    const $ = await this.http.fetchPage(url);
     const term = parseSelectedAcademicTerm($);
-    const marks: MarkEntry[] = [];
 
-    $('table tbody tr').each((_, el) => {
-      const cells = $(el).find('td');
-      if (cells.length < 6) return;
-
-      marks.push({
-        courseName: $(cells[0]).text().trim(),
-        courseCode: $(cells[1]).text().trim(),
-        marksObtained: Number($(cells[2]).text().trim()),
-        maxMarks: Number($(cells[3]).text().trim()),
-        componentName: $(cells[4]).text().trim(),
-        examName: $(cells[5]).text().trim(),
-      });
-    });
+    // This table has a proper <thead>, so "tbody tr" already excludes the header row.
+    const marks = parseDataRows(
+      $,
+      'table tbody tr',
+      6,
+      (cells) => ({
+        courseName: cells[0].text().trim(),
+        courseCode: cells[1].text().trim(),
+        marksObtained: Number(cells[2].text().trim()),
+        maxMarks: Number(cells[3].text().trim()),
+        componentName: cells[4].text().trim(),
+        examName: cells[5].text().trim(),
+      }),
+      { skipFirstRow: false }
+    );
 
     return { term, marks };
   }
