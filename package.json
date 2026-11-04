@@ -11,7 +11,9 @@
     "start:prod": "nitrostack-cli start",
     "upgrade": "nitrostack-cli upgrade",
     "install:all": "nitrostack-cli install",
-    "widget": "npm --prefix src/widgets"
+    "widget": "npm --prefix src/widgets",
+    "test:widgets": "node scripts/test-widgets.mjs",
+    "typecheck:widgets": "tsc --noEmit -p src/widgets/tsconfig.json"
   },
   "dependencies": {
     "@modelcontextprotocol/ext-apps": ">=0.1.0",

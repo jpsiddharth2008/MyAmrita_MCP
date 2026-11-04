@@ -77,3 +77,9 @@ node scripts/manual-auth-test.mjs
 
 - NitroStack docs: <https://docs.nitrostack.ai>
 - Issue tracker (feature build-out): <https://github.com/jpsiddharth2008/MyAmrita_MCP/issues>
+
+## Widgets
+
+Tool results render responsive widgets with light/dark host themes. Build using `npm run build`; NitroStack emits self-contained HTML in `src/widgets/out`. Each page includes the shared shell because production bundling bypasses the Next.js layout.
+
+Validation: `npm run typecheck:widgets` and, after building, `npm run test:widgets`. Browser tests use synthetic data and block network access. They use installed Edge by default; set `WIDGET_BROWSER=chromium` when using Playwright Chromium. No portal login is required. See [widget plan](docs/widget-plan.md) for delivery scope.
