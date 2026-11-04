@@ -2,6 +2,7 @@ import {
   ToolDecorator as Tool,
   ControllerDecorator as Controller,
   Injectable,
+  Widget,
   UseFilters,
   ExecutionContext,
   z,
@@ -28,6 +29,7 @@ export class MarksTools {
         .describe('Optional academic term id to view a past term instead of the portal\'s default term.'),
     }),
   })
+  @Widget('marks')
   @UseFilters(SessionExpiredFilter)
   async getMarks(input: { academicTermId?: string }, ctx: ExecutionContext) {
     const { term, marks } = await this.marksService.getMarks(input.academicTermId);
