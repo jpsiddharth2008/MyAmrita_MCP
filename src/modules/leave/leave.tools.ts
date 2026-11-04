@@ -2,6 +2,7 @@ import {
   ToolDecorator as Tool,
   ControllerDecorator as Controller,
   Injectable,
+  Widget,
   UseFilters,
   ExecutionContext,
   z,
@@ -22,6 +23,7 @@ export class LeaveTools {
       'login session (see auth_login).',
     inputSchema: z.object({}),
   })
+  @Widget('leave')
   @UseFilters(SessionExpiredFilter)
   async getLeaveList(_input: {}, ctx: ExecutionContext) {
     const entries = await this.leave.getLeaveList();
