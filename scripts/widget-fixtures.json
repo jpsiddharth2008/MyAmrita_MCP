@@ -117,5 +117,54 @@
       "value": "Tuesday",
       "absent": "Algorithms"
     }
+  },
+  "marks": {
+    "cases": [
+      {
+        "data": {
+          "term": {
+            "id": "test",
+            "label": "Synthetic semester"
+          },
+          "marks": [
+            {
+              "courseName": "Algorithms",
+              "courseCode": "CS101",
+              "marksObtained": 18,
+              "maxMarks": 20,
+              "componentName": "Quiz",
+              "examName": "Internal"
+            },
+            {
+              "courseName": "Physics",
+              "courseCode": "PH101",
+              "marksObtained": 0,
+              "maxMarks": 0,
+              "componentName": "Lab",
+              "examName": "Pending"
+            }
+          ]
+        },
+        "text": [
+          "Algorithms",
+          "18 / 20",
+          "Percentage unavailable: maximum marks is zero or unavailable."
+        ]
+      },
+      {
+        "data": {
+          "term": null,
+          "marks": []
+        },
+        "text": [
+          "No assessments match this view."
+        ]
+      }
+    ],
+    "filter": {
+      "label": "Search assessments",
+      "value": "physics",
+      "absent": "Algorithms"
+    }
   }
 }
