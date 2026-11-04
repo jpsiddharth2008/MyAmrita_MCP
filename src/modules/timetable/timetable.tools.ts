@@ -2,6 +2,7 @@ import {
   ToolDecorator as Tool,
   ControllerDecorator as Controller,
   Injectable,
+  Widget,
   UseFilters,
   ExecutionContext,
   z,
@@ -21,6 +22,7 @@ export class TimetableTools {
       'Requires an active login session (see auth_login).',
     inputSchema: z.object({}),
   })
+  @Widget('timetable')
   @UseFilters(SessionExpiredFilter)
   async getTimetable(_input: {}, ctx: ExecutionContext) {
     const days = await this.timetable.getTimetable();
@@ -41,6 +43,7 @@ export class TimetableTools {
         .describe('ISO date string, e.g. "2026-09-15". Defaults to today if omitted.'),
     }),
   })
+  @Widget('timetable')
   @UseFilters(SessionExpiredFilter)
   async getClassesForDate(input: { date?: string }, ctx: ExecutionContext) {
     const result = await this.timetable.getClassesForDate(input.date);
