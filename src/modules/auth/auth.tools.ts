@@ -2,6 +2,7 @@ import {
   ToolDecorator as Tool,
   ControllerDecorator as Controller,
   Injectable,
+  Widget,
   ExecutionContext,
   z,
 } from '@nitrostack/core';
@@ -17,6 +18,7 @@ export class AuthTools {
     description: 'Check whether there is currently a valid, active session with the Amrita student portal.',
     inputSchema: z.object({}),
   })
+  @Widget('auth')
   async status(_input: {}, ctx: ExecutionContext) {
     const authenticated = this.session.isAuthenticated();
     ctx.logger.info('Checked Amrita portal session status', { authenticated });
@@ -34,6 +36,7 @@ export class AuthTools {
       'automatically by every other tool until it expires.',
     inputSchema: z.object({}),
   })
+  @Widget('auth')
   async login(_input: {}, ctx: ExecutionContext) {
     ctx.logger.info('Starting interactive Amrita SSO login');
     await this.session.interactiveLogin();
@@ -45,6 +48,7 @@ export class AuthTools {
     description: 'Clear the locally stored Amrita portal session.',
     inputSchema: z.object({}),
   })
+  @Widget('auth')
   async logout(_input: {}, ctx: ExecutionContext) {
     await this.session.clearSession();
     ctx.logger.info('Cleared local Amrita portal session');
