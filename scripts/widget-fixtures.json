@@ -166,5 +166,51 @@
       "value": "physics",
       "absent": "Algorithms"
     }
+  },
+  "leave": {
+    "cases": [
+      {
+        "data": {
+          "entries": [
+            {
+              "id": "1",
+              "type": "Duty leave",
+              "from": "04-11-2026",
+              "to": "05-11-2026",
+              "status": "Approved",
+              "reason": "Synthetic conference",
+              "createdOn": "01-11-2026"
+            },
+            {
+              "id": "2",
+              "type": "Leave",
+              "from": "06-11-2026",
+              "to": "06-11-2026",
+              "status": "Under review",
+              "reason": "Synthetic appointment",
+              "createdOn": "02-11-2026"
+            }
+          ]
+        },
+        "text": [
+          "Duty leave",
+          "Under review",
+          "Synthetic conference"
+        ]
+      },
+      {
+        "data": {
+          "entries": []
+        },
+        "text": [
+          "No leave requests in this view."
+        ]
+      }
+    ],
+    "filter": {
+      "label": "Request status",
+      "value": "Under review",
+      "absent": "Synthetic conference"
+    }
   }
 }

@@ -31,7 +31,7 @@ try {
     await page.getByRole('alert').getByText(/unexpected response/).waitFor(); checks++;
     for (const test of fixture.cases) {
       await inject({ structuredContent: test.data });
-      for (const expected of test.text) await page.getByText(expected, { exact: true }).first().waitFor();
+      for (const expected of test.text) await page.getByText(expected, { exact: true }).filter({ visible: true }).first().waitFor();
       checks++;
     }
     await inject(fixture.cases[0].data, 'dark');
