@@ -2,6 +2,7 @@ import {
   ToolDecorator as Tool,
   ControllerDecorator as Controller,
   Injectable,
+  Widget,
   UseFilters,
   ExecutionContext,
   z,
@@ -25,6 +26,7 @@ export class GatePassTools {
       '(see auth_login).',
     inputSchema: z.object({}),
   })
+  @Widget('gatepass')
   @UseFilters(SessionExpiredFilter)
   async getGatePasses(_input: {}, ctx: ExecutionContext) {
     const gatePasses = await this.gatePass.getGatePasses();
@@ -55,6 +57,7 @@ export class GatePassTools {
         .describe('Must be explicitly true to actually submit. Omit or leave false to preview only.'),
     }),
   })
+  @Widget('gatepass')
   @UseFilters(SessionExpiredFilter)
   async requestGatePass(
     input: {

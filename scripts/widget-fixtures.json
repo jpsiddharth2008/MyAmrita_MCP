@@ -212,5 +212,78 @@
       "value": "Under review",
       "absent": "Synthetic conference"
     }
+  },
+  "gatepass": {
+    "cases": [
+      {
+        "data": {
+          "gatePasses": [
+            {
+              "id": "1",
+              "passName": "Out Pass",
+              "from": "2026-11-04 15:00",
+              "to": "2026-11-04 18:00",
+              "levelStatus": "Warden review",
+              "finalStatus": "Pending",
+              "createdOn": "2026-11-03"
+            }
+          ]
+        },
+        "text": [
+          "Out Pass",
+          "Warden review"
+        ]
+      },
+      {
+        "data": {
+          "submitted": false,
+          "message": "Preview only",
+          "preview": {
+            "passType": "out",
+            "reason": "Synthetic visit",
+            "from": "2026-11-04 15:00",
+            "to": "2026-11-04 18:00"
+          }
+        },
+        "text": [
+          "Preview only · not submitted",
+          "To submit, confirm these exact details in chat. Nothing has been sent to the portal."
+        ]
+      },
+      {
+        "data": {
+          "submitted": true,
+          "request": {
+            "passType": "out",
+            "reason": "Synthetic visit",
+            "from": "2026-11-04 15:00",
+            "to": "2026-11-04 18:00"
+          },
+          "gatePasses": [
+            {
+              "id": "1",
+              "passName": "Out Pass",
+              "from": "2026-11-04 15:00",
+              "to": "2026-11-04 18:00",
+              "levelStatus": "Warden review",
+              "finalStatus": "Pending",
+              "createdOn": "2026-11-03"
+            }
+          ]
+        },
+        "text": [
+          "Submitted · approval pending verification",
+          "Warden review"
+        ]
+      },
+      {
+        "data": {
+          "gatePasses": []
+        },
+        "text": [
+          "No gate passes returned by the portal."
+        ]
+      }
+    ]
   }
 }
