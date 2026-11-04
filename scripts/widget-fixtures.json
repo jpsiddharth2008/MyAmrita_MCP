@@ -1,0 +1,9 @@
+{
+  "attendance": {
+    "cases": [
+      {"data":{"term":{"id":"test","label":"Synthetic semester"},"subjects":[{"courseCode":"CS101","courseName":"Algorithms","className":"A","faculty":["Test Faculty"],"total":20,"present":18,"absent":2,"dutyLeave":0,"medical":0,"percentage":90}],"summary":{"totalClasses":20,"totalPresent":18,"overallPercentage":90}},"text":["Algorithms","Synthetic semester","90%"]},
+      {"data":{"term":null,"threshold":75,"subjects":[]},"text":["No subjects match this attendance view.","Not provided by the portal"]}
+    ],
+    "filter":{"label":"Show only below 75%","value":"","absent":"Algorithms"}
+  }
+}

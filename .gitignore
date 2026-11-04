@@ -63,3 +63,5 @@ tokens.json
 # Persisted Amrita portal session (encrypted at rest, but keep out of git regardless)
 .amrita-session.enc
 .nitrostudio/
+
+.work/
