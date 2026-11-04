@@ -1,15 +1,27 @@
 import { chromium } from 'playwright';
 import { readFile, readdir, mkdir } from 'node:fs/promises';
 import assert from 'node:assert/strict';
+import { getWidgetMetadata, createComponentFromNextRoute } from '@nitrostack/core';
 
 // Production bundles with a synthetic host; never contacts the student portal.
 const browser = await chromium.launch({ channel: process.env.WIDGET_BROWSER || 'msedge', headless: true });
 const fixtures = JSON.parse(await readFile(new URL('./widget-fixtures.json', import.meta.url), 'utf8'));
 await mkdir('.work/screenshots', { recursive: true });
 let checks = 0;
+let failure;
 try {
   for (const [route, fixture] of Object.entries(fixtures)) {
     const html = await readFile(`src/widgets/out/${route}.html`, 'utf8');
+    const module = await import(`../dist/modules/${route}/${route}.tools.js`);
+    const controller = Object.values(module).find(value => typeof value === 'function');
+    for (const method of Object.getOwnPropertyNames(controller.prototype).filter(name => name !== 'constructor')) {
+      assert.equal(getWidgetMetadata(controller.prototype, method)?.route, route, `${route}.${method}: widget route`);
+    }
+    const component = createComponentFromNextRoute(route);
+    await component.compile();
+    assert.equal(component.getBundle(), html.trim(), `${route}: framework must serve the production HTML`);
+    assert.equal(component.getResourceUri(), `ui://widget/next-${route}.html`);
+    checks++;
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -57,4 +69,10 @@ try {
   const routes = (await readdir('src/widgets/out')).filter(f => f.endsWith('.html')).map(f => f.slice(0, -5)).sort();
   assert.deepEqual(routes, Object.keys(fixtures).sort(), 'Every bundled widget needs test fixtures');
   console.log(`Passed ${checks} browser checks across ${routes.length} production widgets.`);
+} catch (error) {
+  failure = error;
 } finally { await browser.close(); }
+// NitroStack imports create background timers. All assertions and browser cleanup
+// have completed here; preserve assertion failures in the process exit code.
+if (failure) console.error(failure);
+process.exit(failure ? 1 : 0);

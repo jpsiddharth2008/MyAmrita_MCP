@@ -341,5 +341,28 @@
       "value": "holiday",
       "absent": "Semester exams"
     }
+  },
+  "auth": {
+    "cases": [
+      {
+        "data": {
+          "authenticated": true
+        },
+        "text": [
+          "Session available",
+          "Ready to request your portal data"
+        ]
+      },
+      {
+        "data": {
+          "authenticated": false
+        },
+        "text": [
+          "Signed out",
+          "Sign in with your college account",
+          "Ask to sign in in chat."
+        ]
+      }
+    ]
   }
 }
