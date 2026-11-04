@@ -2,6 +2,7 @@ import {
   ToolDecorator as Tool,
   ControllerDecorator as Controller,
   Injectable,
+  Widget,
   Cache,
   ExecutionContext,
   z,
@@ -21,6 +22,7 @@ export class CalendarTools {
       'is a public institutional calendar — no login required.',
     inputSchema: z.object({}),
   })
+  @Widget('calendar')
   @Cache({ ttl: 3600 })
   async getAcademicCalendar(_input: {}, ctx: ExecutionContext) {
     const events = await this.calendar.getEvents();
@@ -39,6 +41,7 @@ export class CalendarTools {
       days: z.number().min(1).max(365).default(30).describe('How many days ahead of today to include.'),
     }),
   })
+  @Widget('calendar')
   @Cache({ ttl: 3600 })
   async getUpcomingEvents(input: { days: number }, ctx: ExecutionContext) {
     const events = await this.calendar.getEvents();

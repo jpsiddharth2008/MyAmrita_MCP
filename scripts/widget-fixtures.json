@@ -285,5 +285,61 @@
         ]
       }
     ]
+  },
+  "calendar": {
+    "cases": [
+      {
+        "data": {
+          "events": [
+            {
+              "title": "Semester exams",
+              "startDate": "2026-11-10",
+              "endDate": "2026-11-15"
+            },
+            {
+              "title": "Holiday",
+              "startDate": "2026-11-04",
+              "endDate": "2026-11-04"
+            }
+          ]
+        },
+        "text": [
+          "Semester exams",
+          "Holiday",
+          "Single day",
+          "Multiple days"
+        ]
+      },
+      {
+        "data": {
+          "from": "2026-11-04",
+          "to": "2026-11-06",
+          "events": [
+            {
+              "title": "Ongoing event",
+              "startDate": "2026-11-01",
+              "endDate": "2026-11-05"
+            }
+          ]
+        },
+        "text": [
+          "Ongoing event",
+          "Requested window: 2026-11-04 through 2026-11-06. Events overlapping this window are included."
+        ]
+      },
+      {
+        "data": {
+          "events": []
+        },
+        "text": [
+          "No calendar events match this view."
+        ]
+      }
+    ],
+    "filter": {
+      "label": "Search events",
+      "value": "holiday",
+      "absent": "Semester exams"
+    }
   }
 }
